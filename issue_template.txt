@@ -1,0 +1,37 @@
+#### Description
+
+<A cursory verbal overview of the issue.>
+
+#### Resulting detriment
+
+<Verbal description of the effect of the issue.>
+
+#### Preferred fix
+
+<Simple verbal description of an ideal accomplishable solution to the problem>
+
+#### Satisfactory fix
+
+<Simple verbal description of potential workaround grounded in MVP philosophy.>
+
+#### Severity
+
+<
+Any combination of:				
+-Irrelevant/unnoticible			Of no noteworthy importance. Issue because of a style convention, or some such.
+-Potential to become annoying		May become annoying following future planned/pondered changes.
+Annoying				User may have a less pleasant experience due to the issue.
+Potential to become detrimental		May become detrimental following future planned/pondered changes.
+Detrimental				Maintains functionality at a reduced capacity or performance - a quantitatively measurable issue
+Potential to become Severe		May become Severe following future planned/pondered changes.
+Severe					Prevents some, but not all, functionality of the program - a qualitatively measurable issue.
+Potential to become critical		May become critical following future planned/pondered changes.
+Critical				Makes software unusable and/or harmful to host system. 
+>
+
+#### Related files
+
+<
+Links to any related files or sub-source directory, if this can cover the issue in three or less links, otherwise a verbal explanation of
+what files relate to the issue.
+>
