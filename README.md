@@ -7,5 +7,5 @@ Seeks to make the background fully transparent, avoid graining on the border of 
 
 ### What is and be
 
-A hardcoded mess of unorganized functions, containing large amounts of uncommented, outcommented, deprecated and/or unused code. 
-Some for editing/toying around with colours and colourswaps, some for detecting borders and gradients, some for making images maximally transparent yet replicatable by placing output infront of assumed original background colour. Further more, current implementation is done in Java, used for this project as a prototyping language, chosen for ease of use and syntactic portability to C/C++.
+A mess of unorganized functions, containing large amounts of uncommented, outcommented, deprecated and/or unused code. 
+Some for editing/toying around with colours and colourswaps, some for detecting borders and gradients, some for making images maximally transparent yet replicatable by placing output in front of assumed original background colour. Further more, current implementation is done in Java, used for this project as a prototyping language, chosen for ease of use and syntactic portability to C/C++.
