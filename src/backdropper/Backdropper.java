@@ -22,38 +22,40 @@
  * THE SOFTWARE.
  */
 package backdropper;
+
 /**
  *
  * @author Olav
  */
 
+import java.io.File;
 import java.io.IOException;
+import javafx.application.Application;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 
-public class Backdropper {
+public class Backdropper extends Application {
 
     static LoaderWriter Loader;
     static Editor Editor;
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) throws IOException {
-        Loader = new LoaderWriter();
-        Editor = new Editor(Loader.original);
-        //Editor.colorSwap();
-        //Editor.colorTest();
-        //Editor.alphaScaleByMatch(Loader.original);
-        Editor.gradientAlpha(Loader.original);
-        Loader.ImageWriter("");
-        /*
-        for (int i = 0; i < 27; i++) {
-            Loader = new LoaderWriter();
-            Editor = new Editor(Loader.original);
-            Editor.colorSwap(i);
-            Loader.ImageWriter(Integer.toString(i + 1));
-        }
-        */
-
+    public static void main(String[] args) {
+        Application.launch(args);
     }
 
+    @Override
+    public void start(Stage stage) throws Exception {
+        FileChooser fc = new FileChooser();
+
+        fc.setTitle("Choose file to edit");
+
+        //File openedFile = fc.showOpenDialog(stage);
+        //BDEntry bdEntry = LoaderWriter.openToBDEntry(stage);
+        BufferedImage image = LoaderWriter.ImageFromFile(LoaderWriter.getUserFileChoice(true, stage));
+        LoaderWriter.exportBDEntry(image, "default", stage);
+
+        System.exit(0);
+    }
 }

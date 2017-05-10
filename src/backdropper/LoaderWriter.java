@@ -29,31 +29,103 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import java.util.zip.ZipFile; //to be used
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Stage;
 
 public class LoaderWriter {
-    
-    public BufferedImage original;
 
-    public LoaderWriter() throws IOException {
-        try {
-            this.original = ImageIO.read(getClass().getClassLoader().getResource("res/image.jpg"));//temp. file solution TODO: fix
-        } catch (IllegalArgumentException ex) {
-            System.out.println("No file available");
-            //System.exit(0);
+    public static File getUserFileChoice(boolean read, Stage stage) {
+        FileChooser fileChooser = new FileChooser();
+        File file;
+        if (read) {
+            ExtensionFilter ef1 = new ExtensionFilter("Any readable", "*.jpg", "*.png", "*.jpeg", "*.bdf", "*.JPG", "*.PNG", "*.JPEG", "*.BDF");
+            ExtensionFilter ef2 = new ExtensionFilter("BD file (.bdf)", "*.bdf");
+            ExtensionFilter ef3 = new ExtensionFilter("Edit any image", "*.jpg", "*.png", "*.jpeg", "*.JPG", "*.PNG", "*.JPEG");
+            ExtensionFilter ef4 = new ExtensionFilter("PNG", "*.png", "*.PNG");
+            ExtensionFilter ef5 = new ExtensionFilter("JPEG", "*.jpeg", "*.JPEG");
+            ExtensionFilter ef6 = new ExtensionFilter("JPG", "*.jpg", "*.JPG");
+            fileChooser.getExtensionFilters().addAll(ef1, ef2, ef3, ef4, ef5);
+            fileChooser.setTitle("Choose a file to edit");
+            file = fileChooser.showOpenDialog(stage);
+        } else {
+            ExtensionFilter ef2 = new ExtensionFilter("BD file (.bdf)", "*.bdf");
+            ExtensionFilter ef3 = new ExtensionFilter("Store as image", "*.jpg", "*.png", "*.jpeg", "*.JPG", "*.PNG", "*.JPEG");
+            ExtensionFilter ef4 = new ExtensionFilter("PNG", "*.png", "*.PNG");
+            ExtensionFilter ef5 = new ExtensionFilter("JPEG", "*.jpeg", "*.JPEG");
+            ExtensionFilter ef6 = new ExtensionFilter("JPG", "*.jpg", "*.JPG");
+            fileChooser.getExtensionFilters().addAll(ef2, ef3, ef4, ef5);
+            fileChooser.setTitle("Choose a save file");
+            file = fileChooser.showSaveDialog(stage);
         }
-            
-        //allow transparency editing irregardles of source image opacity.
-        BufferedImage temp = new BufferedImage(original.getWidth(), original.getHeight(), original.TYPE_4BYTE_ABGR);
-        temp.getGraphics().drawImage(original, 0, 0, null);
-        original = temp;
+        return file;
     }
-    
-    public void ImageWriter(String s){
-        File file = new File("src/res/Transp_Logo_" + s + ".png");//temp. file solution TODO: fix
+
+    public static BufferedImage ImageFromFile(File file) throws IOException {
+
+        BufferedImage image;
         try {
-            ImageIO.write(original, "png", file);
-        } catch (IOException ex) {
-            Logger.getLogger(LoaderWriter.class.getName()).log(Level.SEVERE, null, ex);
+            image = ImageIO.read(file);
+            BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            temp.getGraphics().drawImage(image, 0, 0, null); //ensures consistent argb-format regardless of loaded image opacity
+            return temp;
+
+        } catch (IllegalArgumentException ex) {
+            System.out.println("File not available or usable.");
+            System.exit(1);
+            return null;    //hic sunt dracones
+        }
+    }
+
+    static String nameFromFile(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex == 0) {
+            return "default";
+        } else {
+            return fileName.substring(0, dotIndex - 1);
+        }
+    }
+
+    static void saveToBDEntry(BDEntry entry, Stage stage) {
+        //to-be-implemented, to save as .bdf using utils.zip lib.
+    }
+
+    static void exportBDEntry(BufferedImage image, String name, Stage stage) {
+        File file = getUserFileChoice(false, stage);
+        if (file == null) {
+            return; //user canceled save
+        }
+        name = file.getName();
+        String type = name.substring(name.lastIndexOf('.') + 1);
+        if (type.equals("jpg") || type.equals("png") || type.equals("jpeg")) {
+            try {
+                ImageIO.write(image, type, file);
+            } catch (IOException ex) {
+                Logger.getLogger(LoaderWriter.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.out.println("Invalid file format");
+        }
+    }
+
+    static BDEntry openToBDEntry(Stage stage) throws IOException {
+        File file = getUserFileChoice(true, stage);
+        if (file == null) {
+            System.out.println("No file chosen");
+            return null;
+        }
+        String name = file.getName();
+        if (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg")) {
+
+            return new BDEntry(ImageFromFile(file), "Layer 1", nameFromFile(name));
+        } else if (name.endsWith(".bdf")) {
+            //todo: implement using utils.zip
+            return null;
+        } else {
+            System.out.println("nonusable file");
+            System.exit(1);
+            return null;
         }
     }
 }
