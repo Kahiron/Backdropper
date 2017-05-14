@@ -24,12 +24,17 @@
 package backdropper;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
 import javax.imageio.ImageIO;
 import java.util.zip.ZipFile; //to be used
+import java.util.zip.ZipOutputStream;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
@@ -87,8 +92,17 @@ public class LoaderWriter {
         }
     }
 
-    static void saveToBDEntry(BDEntry entry, Stage stage) {
-        //to-be-implemented, to save as .bdf using utils.zip lib.
+    static void saveBDEntryToFile(BDEntry entry, File file, Stage stage) throws FileNotFoundException, IOException {
+        FileOutputStream        fOut = new FileOutputStream(file);
+        BufferedOutputStream    bOut = new BufferedOutputStream(fOut);
+        ZipOutputStream         zOut = new ZipOutputStream(bOut);
+        
+        for (Layer layer : entry.layers){
+            File layerFile = layer.getLayerFile();
+            ZipEntry zipEntry = new ZipEntry(layerFile.getAbsolutePath());
+            zOut.putNextEntry(zipEntry);
+            layerFile.delete();
+        }
     }
 
     static void exportBDEntry(BufferedImage image, String name, Stage stage) {

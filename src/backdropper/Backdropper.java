@@ -28,12 +28,10 @@ package backdropper;
  * @author Olav
  */
 
-import java.io.File;
-import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 public class Backdropper extends Application {
