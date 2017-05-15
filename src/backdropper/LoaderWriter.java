@@ -23,6 +23,7 @@
  */
 package backdropper;
 
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -33,7 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import javax.imageio.ImageIO;
-import java.util.zip.ZipFile; //to be used
 import java.util.zip.ZipOutputStream;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -41,6 +41,17 @@ import javafx.stage.Stage;
 
 public class LoaderWriter {
 
+    /**
+     * Urges the user to elect a file to open, or where to save a file, 
+     * through a system call (using the native file manager). Ensures file 
+     * chosen is of valid format.
+     * 
+     * @param read true if the dialogue and constraints should be for opening a 
+     * file, false if a (potentially new) file to save to should be produced.
+     * 
+     * @param stage application-stage for drawing the window.
+     * @return a file where data can be read/written.
+     */
     public static File getUserFileChoice(boolean read, Stage stage) {
         FileChooser fileChooser = new FileChooser();
         File file;
@@ -67,8 +78,16 @@ public class LoaderWriter {
         return file;
     }
 
+    /**
+     * Takes an image file and, given it is of a viable format, returns a 
+     * buffered image that of the 4-byte-ARGB-format. Terminates the program if 
+     * the file was unusable.
+     * 
+     * @param file the File from which an image should be created.
+     * @return buffered image from the passed file, in 4-byte-ARGB-format.
+     * @throws IOException 
+     */
     public static BufferedImage ImageFromFile(File file) throws IOException {
-
         BufferedImage image;
         try {
             image = ImageIO.read(file);
@@ -82,17 +101,36 @@ public class LoaderWriter {
             return null;    //hic sunt dracones
         }
     }
-
+    
+    /**
+     * Produces the substring up to but not including the last '.' of a 
+     * passed string. Used to glean the name of a file. Returns "default" if 
+     * format is not as expected.
+     * 
+     * @param  fileName String to be truncated
+     * @return substring of fileName up to last '.', or "default".
+     */
     static String nameFromFile(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');
-        if (dotIndex == 0) {
+        if (dotIndex <= 0) {
             return "default";
         } else {
             return fileName.substring(0, dotIndex - 1);
         }
     }
 
-    static void saveBDEntryToFile(BDEntry entry, File file, Stage stage) throws FileNotFoundException, IOException {
+    /**
+     * Packages and stores passed data to a provided file. Used to save a work 
+     * in progress.
+     * 
+     * @param entry data to be saved.
+     * @param file  file to save data to. Should be of the .bdf-type, but this 
+     * won't affect the behaviour of the method.
+     * 
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
+    static void saveBDEntryToFile(BDEntry entry, File file) throws FileNotFoundException, IOException {
         FileOutputStream        fOut = new FileOutputStream(file);
         BufferedOutputStream    bOut = new BufferedOutputStream(fOut);
         ZipOutputStream         zOut = new ZipOutputStream(bOut);
@@ -105,13 +143,22 @@ public class LoaderWriter {
         }
     }
 
-    static void exportBDEntry(BufferedImage image, String name, Stage stage) {
-        File file = getUserFileChoice(false, stage);
-        if (file == null) {
-            return; //user canceled save
+    /**
+     * Produces an image from a provided entry and stores it to a provided 
+     * image file. File should be of .jpg-, .png- or .jpg-format.
+     * 
+     * @param entry BDEntry to save. 
+     * @param file
+     */
+    static void exportBDEntry(BDEntry entry, File file) {
+        BufferedImage image = new BufferedImage(entry.getWidth(), entry.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics g = image.getGraphics();
+        for (Layer layer : entry.layers) {
+            layer.drawLayer(g);
         }
-        name = file.getName();
-        String type = name.substring(name.lastIndexOf('.') + 1);
+        
+        String name = file.getName();
+        String type = name.substring(name.lastIndexOf('.') + 1).toLowerCase();
         if (type.equals("jpg") || type.equals("png") || type.equals("jpeg")) {
             try {
                 ImageIO.write(image, type, file);
@@ -123,6 +170,26 @@ public class LoaderWriter {
         }
     }
 
+    public static void saveBDEntry(BDEntry entry, Stage stage) throws IOException{
+        File file = getUserFileChoice(false, stage);
+        if (file != null){ //true if a file is chosen.
+            String lcName = file.getName().toLowerCase();
+            if (lcName.endsWith(".png") || lcName.endsWith(".jpg") || lcName.endsWith(".jpeg"))
+                exportBDEntry(entry, file);
+            else if (lcName.endsWith(".bdf"))
+                saveBDEntryToFile(entry, file);
+            else 
+                System.out.println("invalid file chosen");
+        }
+    }
+    
+    /**
+     * Creates and returns a new BDEntry based on user selected file.
+     * 
+     * @param stage applicationStage where user can be asked for file selection.
+     * @return a new BDEntry based on the file chosen by user (image or .bdf).
+     * @throws IOException 
+     */
     static BDEntry openToBDEntry(Stage stage) throws IOException {
         File file = getUserFileChoice(true, stage);
         if (file == null) {
@@ -130,13 +197,14 @@ public class LoaderWriter {
             return null;
         }
         String name = file.getName();
-        if (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg")) {
+        String lcName = name.toLowerCase();
+        if (lcName.endsWith(".png") || lcName.endsWith(".jpg") || lcName.endsWith(".jpeg")) {
 
             return new BDEntry(ImageFromFile(file), "Layer 1", nameFromFile(name));
-        } else if (name.endsWith(".bdf")) {
+        } else if (lcName.endsWith(".bdf")) {
             //todo: implement using utils.zip
             return null;
-        } else {
+        } else { //Should not enter if correct extension filter has been applied. Hic sunt dracones.
             System.out.println("nonusable file");
             System.exit(1);
             return null;

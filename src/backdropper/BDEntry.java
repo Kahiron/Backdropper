@@ -35,12 +35,21 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 public class BDEntry {
+    private int height, width;
     public ArrayList<Layer> layers;
     public String entryName;
     
     public BDEntry(ArrayList<Layer> layers, ArrayList<String> layerNames, String entryName) {
         this.layers     = layers;
         this.entryName  = entryName;
+    }
+    
+    public int getHeight(){
+        return height;
+    }
+    
+    public int getWidth(){
+        return width;
     }
     
     public BDEntry(BufferedImage image, String LayerName, String entryName){
