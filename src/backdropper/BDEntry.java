@@ -39,9 +39,11 @@ public class BDEntry {
     public ArrayList<Layer> layers;
     public String entryName;
     
-    public BDEntry(ArrayList<Layer> layers, ArrayList<String> layerNames, String entryName) {
+    public BDEntry(ArrayList<Layer> layers, ArrayList<String> layerNames, String entryName, int height, int width) {
         this.layers     = layers;
         this.entryName  = entryName;
+        this.height     = height;
+        this.width      = width;
     }
     
     public int getHeight(){
@@ -56,6 +58,8 @@ public class BDEntry {
         this.layers     = new ArrayList<>();
         this.layers.add(new ImageLayer(entryName, image, 0, 0));
         this.entryName  = entryName;
+        this.height = image.getHeight();
+        this.width  = image.getWidth();
     }
 }
 
