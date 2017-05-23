@@ -28,6 +28,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -60,6 +62,19 @@ public class BDEntry {
         this.entryName  = entryName;
         this.height = image.getHeight();
         this.width  = image.getWidth();
+    }
+
+    File getMetaTempFile() throws IOException {
+        File tmpMetaFile = File.createTempFile("meta", ".txt");
+        FileOutputStream fos = new FileOutputStream(tmpMetaFile);
+        //write data to file for storage
+        String nameDef = "name=" + this.entryName + '\n';
+        String xDef = "x=" + this.getWidth() + '\n';
+        String yDef = "y=" + this.getHeight() + '\n';
+        fos.write(nameDef.getBytes());
+        fos.write(xDef.getBytes());
+        fos.write(yDef.getBytes());
+        return tmpMetaFile;
     }
 }
 

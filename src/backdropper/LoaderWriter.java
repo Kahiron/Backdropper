@@ -30,9 +30,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import javax.imageio.ImageIO;
 import java.util.zip.ZipOutputStream;
 import javafx.stage.FileChooser;
@@ -129,13 +131,29 @@ public class LoaderWriter {
     static void saveBDEntryToFile(BDEntry entry, File file) throws FileNotFoundException, IOException {
         FileOutputStream        fOut = new FileOutputStream(file);
         BufferedOutputStream    bOut = new BufferedOutputStream(fOut);
-        ZipOutputStream         zOut = new ZipOutputStream(bOut);
+        ZipOutputStream         zOut = new ZipOutputStream(fOut);
+        
+        File metaFile = entry.getMetaTempFile();
+        ZipEntry zipEntry = new ZipEntry(metaFile.getAbsolutePath());
+        zOut.putNextEntry(zipEntry);
+        metaFile.delete();
         
         for (Layer layer : entry.layers){
             File layerFile = layer.getLayerFile();
-            ZipEntry zipEntry = new ZipEntry(layerFile.getAbsolutePath());
+            zipEntry = new ZipEntry(layerFile.getAbsolutePath());
             zOut.putNextEntry(zipEntry);
             layerFile.delete();
+        }
+
+        zOut.close();
+        fOut.close();
+        bOut.close();
+        
+        ZipFile zip = new ZipFile(file);
+        Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zip.entries();
+        while (entries.hasMoreElements()) {
+            ZipEntry nextElement = entries.nextElement();
+            System.out.println(nextElement.getName());
         }
     }
 
