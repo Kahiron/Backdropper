@@ -41,6 +41,13 @@ import javafx.stage.Stage;
 
 public class LoaderWriter {
 
+    final static ExtensionFilter ef1 = new ExtensionFilter("Any readable", "*.jpg", "*.png", "*.jpeg", "*.bdf", "*.JPG", "*.PNG", "*.JPEG", "*.BDF");    
+    final static ExtensionFilter ef2 = new ExtensionFilter("BD file (.bdf)", "*.bdf");
+    final static ExtensionFilter ef3 = new ExtensionFilter("Edit any image", "*.jpg", "*.png", "*.jpeg", "*.JPG", "*.PNG", "*.JPEG");
+    final static ExtensionFilter ef4 = new ExtensionFilter("PNG", "*.png", "*.PNG");
+    final static ExtensionFilter ef5 = new ExtensionFilter("JPEG", "*.jpeg", "*.JPEG");
+    final static ExtensionFilter ef6 = new ExtensionFilter("JPG", "*.jpg", "*.JPG");
+
     /**
      * Urges the user to elect a file to open, or where to save a file, 
      * through a system call (using the native file manager). Ensures file 
@@ -54,23 +61,12 @@ public class LoaderWriter {
      */
     public static File getUserFileChoice(boolean read, Stage stage) {
         FileChooser fileChooser = new FileChooser();
-        File file;
+        File file;        
         if (read) {
-            ExtensionFilter ef1 = new ExtensionFilter("Any readable", "*.jpg", "*.png", "*.jpeg", "*.bdf", "*.JPG", "*.PNG", "*.JPEG", "*.BDF");
-            ExtensionFilter ef2 = new ExtensionFilter("BD file (.bdf)", "*.bdf");
-            ExtensionFilter ef3 = new ExtensionFilter("Edit any image", "*.jpg", "*.png", "*.jpeg", "*.JPG", "*.PNG", "*.JPEG");
-            ExtensionFilter ef4 = new ExtensionFilter("PNG", "*.png", "*.PNG");
-            ExtensionFilter ef5 = new ExtensionFilter("JPEG", "*.jpeg", "*.JPEG");
-            ExtensionFilter ef6 = new ExtensionFilter("JPG", "*.jpg", "*.JPG");
             fileChooser.getExtensionFilters().addAll(ef1, ef2, ef3, ef4, ef5, ef6);
             fileChooser.setTitle("Choose a file to edit");
             file = fileChooser.showOpenDialog(stage);
         } else {
-            ExtensionFilter ef2 = new ExtensionFilter("BD file (.bdf)", "*.bdf");
-            ExtensionFilter ef3 = new ExtensionFilter("Store as image", "*.jpg", "*.png", "*.jpeg", "*.JPG", "*.PNG", "*.JPEG");
-            ExtensionFilter ef4 = new ExtensionFilter("PNG", "*.png", "*.PNG");
-            ExtensionFilter ef5 = new ExtensionFilter("JPEG", "*.jpeg", "*.JPEG");
-            ExtensionFilter ef6 = new ExtensionFilter("JPG", "*.jpg", "*.JPG");
             fileChooser.getExtensionFilters().addAll(ef2, ef3, ef4, ef5, ef6);
             fileChooser.setTitle("Choose a save file");
             file = fileChooser.showSaveDialog(stage);
