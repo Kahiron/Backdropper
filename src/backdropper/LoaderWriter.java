@@ -62,7 +62,7 @@ public class LoaderWriter {
             ExtensionFilter ef4 = new ExtensionFilter("PNG", "*.png", "*.PNG");
             ExtensionFilter ef5 = new ExtensionFilter("JPEG", "*.jpeg", "*.JPEG");
             ExtensionFilter ef6 = new ExtensionFilter("JPG", "*.jpg", "*.JPG");
-            fileChooser.getExtensionFilters().addAll(ef1, ef2, ef3, ef4, ef5);
+            fileChooser.getExtensionFilters().addAll(ef1, ef2, ef3, ef4, ef5, ef6);
             fileChooser.setTitle("Choose a file to edit");
             file = fileChooser.showOpenDialog(stage);
         } else {
@@ -71,7 +71,7 @@ public class LoaderWriter {
             ExtensionFilter ef4 = new ExtensionFilter("PNG", "*.png", "*.PNG");
             ExtensionFilter ef5 = new ExtensionFilter("JPEG", "*.jpeg", "*.JPEG");
             ExtensionFilter ef6 = new ExtensionFilter("JPG", "*.jpg", "*.JPG");
-            fileChooser.getExtensionFilters().addAll(ef2, ef3, ef4, ef5);
+            fileChooser.getExtensionFilters().addAll(ef2, ef3, ef4, ef5, ef6);
             fileChooser.setTitle("Choose a save file");
             file = fileChooser.showSaveDialog(stage);
         }
@@ -159,6 +159,13 @@ public class LoaderWriter {
         
         String name = file.getName();
         String type = name.substring(name.lastIndexOf('.') + 1).toLowerCase();
+        if (type.equals("jpg") || type.equals("jpeg")) { //jpg/jpeg can't handle alpha values, ImageIO does not handle this.
+            BufferedImage rgbImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+            rgbImg.getGraphics().drawImage(image, 0, 0, null);
+            image = rgbImg;
+            
+        }
+            
         if (type.equals("jpg") || type.equals("png") || type.equals("jpeg")) {
             try {
                 ImageIO.write(image, type, file);

@@ -51,12 +51,12 @@ public class Backdropper extends Application {
 
         //File openedFile = fc.showOpenDialog(stage);
         BDEntry bdEntry = LoaderWriter.openToBDEntry(stage);
-        BDEntry l2Entry = LoaderWriter.openToBDEntry(stage);
-        bdEntry.layers.add(l2Entry.layers.get(0));
+        //BDEntry l2Entry = LoaderWriter.openToBDEntry(stage);
+        //bdEntry.layers.add(l2Entry.layers.get(0));
         //BufferedImage image = LoaderWriter.ImageFromFile(LoaderWriter.getUserFileChoice(true, stage));
         LoaderWriter.saveBDEntry(bdEntry, stage);
-        bdEntry = LoaderWriter.openToBDEntry(stage);
-        LoaderWriter.saveBDEntry(bdEntry, stage);
+        //bdEntry = LoaderWriter.openToBDEntry(stage);
+        //LoaderWriter.saveBDEntry(bdEntry, stage);
 
         System.exit(0);
     }
