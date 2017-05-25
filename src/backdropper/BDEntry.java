@@ -64,8 +64,9 @@ public class BDEntry {
         this.width  = image.getWidth();
     }
 
-    File getMetaTempFile() throws IOException {
-        File tmpMetaFile = File.createTempFile("meta", ".txt");
+    File getMetaTempFile(String dir) throws IOException {
+        File tmpMetaFile = new File(dir + "¨\\meta.txt");
+        //File tmpMetaFile = File.createTempFile("meta", ".txt");
         FileOutputStream fos = new FileOutputStream(tmpMetaFile);
         //write data to file for storage
         String nameDef = "name=" + this.entryName + '\n';
@@ -81,7 +82,7 @@ public class BDEntry {
 abstract class Layer{
     public int x, y, height, width;
     public abstract void drawLayer(Graphics g);
-    public abstract File getLayerFile();
+    public abstract File getLayerFile(String dir);
 }
 
 class ImageLayer extends Layer{
@@ -139,9 +140,10 @@ class ImageLayer extends Layer{
     }    
 
     @Override
-    public File getLayerFile() {
+    public File getLayerFile(String dir) {
         try {
-            File f = File.createTempFile(name, null);
+            File f = new File(dir + "\\" + name + ".png");
+            //File f = File.createTempFile(name, ".png");
             ImageIO.write(image, "png", f);
             return f;
         } catch (IOException ex) {
@@ -159,9 +161,9 @@ class TextLayer extends Layer{
     }
 
     @Override
-    public File getLayerFile() {
+    public File getLayerFile(String dir) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    }   
 }
 
 class Text{

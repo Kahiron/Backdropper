@@ -25,8 +25,10 @@ package backdropper;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -43,7 +45,7 @@ import javafx.stage.Stage;
 
 public class LoaderWriter {
 
-    final static ExtensionFilter ef1 = new ExtensionFilter("Any readable", "*.jpg", "*.png", "*.jpeg", "*.bdf", "*.JPG", "*.PNG", "*.JPEG", "*.BDF");    
+    final static ExtensionFilter ef1 = new ExtensionFilter("Any readable", "*.jpg", "*.png", "*.jpeg", "*.bdf", "*.JPG", "*.PNG", "*.JPEG", "*.BDF");
     final static ExtensionFilter ef2 = new ExtensionFilter("BD file (.bdf)", "*.bdf");
     final static ExtensionFilter ef3 = new ExtensionFilter("Edit any image", "*.jpg", "*.png", "*.jpeg", "*.JPG", "*.PNG", "*.JPEG");
     final static ExtensionFilter ef4 = new ExtensionFilter("PNG", "*.png", "*.PNG");
@@ -51,19 +53,19 @@ public class LoaderWriter {
     final static ExtensionFilter ef6 = new ExtensionFilter("JPG", "*.jpg", "*.JPG");
 
     /**
-     * Urges the user to elect a file to open, or where to save a file, 
-     * through a system call (using the native file manager). Ensures file 
-     * chosen is of valid format.
-     * 
-     * @param read true if the dialogue and constraints should be for opening a 
+     * Urges the user to elect a file to open, or where to save a file, through
+     * a system call (using the native file manager). Ensures file chosen is of
+     * valid format.
+     *
+     * @param read true if the dialogue and constraints should be for opening a
      * file, false if a (potentially new) file to save to should be produced.
-     * 
+     *
      * @param stage application-stage for drawing the window.
      * @return a file where data can be read/written.
      */
     public static File getUserFileChoice(boolean read, Stage stage) {
         FileChooser fileChooser = new FileChooser();
-        File file;        
+        File file;
         if (read) {
             fileChooser.getExtensionFilters().addAll(ef1, ef2, ef3, ef4, ef5, ef6);
             fileChooser.setTitle("Choose a file to edit");
@@ -77,13 +79,13 @@ public class LoaderWriter {
     }
 
     /**
-     * Takes an image file and, given it is of a viable format, returns a 
-     * buffered image that of the 4-byte-ARGB-format. Terminates the program if 
+     * Takes an image file and, given it is of a viable format, returns a
+     * buffered image that of the 4-byte-ARGB-format. Terminates the program if
      * the file was unusable.
-     * 
+     *
      * @param file the File from which an image should be created.
      * @return buffered image from the passed file, in 4-byte-ARGB-format.
-     * @throws IOException 
+     * @throws IOException
      */
     public static BufferedImage ImageFromFile(File file) throws IOException {
         BufferedImage image;
@@ -99,13 +101,13 @@ public class LoaderWriter {
             return null;    //hic sunt dracones
         }
     }
-    
+
     /**
-     * Produces the substring up to but not including the last '.' of a 
-     * passed string. Used to glean the name of a file. Returns "default" if 
-     * format is not as expected.
-     * 
-     * @param  fileName String to be truncated
+     * Produces the substring up to but not including the last '.' of a passed
+     * string. Used to glean the name of a file. Returns "default" if format is
+     * not as expected.
+     *
+     * @param fileName String to be truncated
      * @return substring of fileName up to last '.', or "default".
      */
     static String nameFromFile(String fileName) {
@@ -118,37 +120,61 @@ public class LoaderWriter {
     }
 
     /**
-     * Packages and stores passed data to a provided file. Used to save a work 
+     * Packages and stores passed data to a provided file. Used to save a work
      * in progress.
-     * 
+     *
      * @param entry data to be saved.
-     * @param file  file to save data to. Should be of the .bdf-type, but this 
+     * @param file file to save data to. Should be of the .bdf-type, but this
      * won't affect the behaviour of the method.
-     * 
+     *
      * @throws FileNotFoundException
-     * @throws IOException 
+     * @throws IOException
      */
     static void saveBDEntryToFile(BDEntry entry, File file) throws FileNotFoundException, IOException {
-        FileOutputStream        fOut = new FileOutputStream(file);
-        BufferedOutputStream    bOut = new BufferedOutputStream(fOut);
-        ZipOutputStream         zOut = new ZipOutputStream(fOut);
-        
-        File metaFile = entry.getMetaTempFile();
+        FileOutputStream fOut = new FileOutputStream(file);
+        BufferedOutputStream bOut = new BufferedOutputStream(fOut);
+        ZipOutputStream zOut = new ZipOutputStream(fOut);
+
+        final int BUFFER = 2048;
+        byte data[] = new byte[BUFFER];
+        BufferedInputStream bif;
+        FileInputStream fif;
+
+        File metaFile = entry.getMetaTempFile(file.getParent());
         ZipEntry zipEntry = new ZipEntry(metaFile.getAbsolutePath());
         zOut.putNextEntry(zipEntry);
+        fif = new FileInputStream(metaFile);
+        bif = new BufferedInputStream(fif);
+
+        int i;
+        while ((i = bif.read(data, 0, BUFFER)) != -1) {
+            zOut.write(data, 0, i);
+            System.out.println("wrote meta file: " + i + " bytes");
+        }
         metaFile.delete();
+        bif.close();
         
-        for (Layer layer : entry.layers){
-            File layerFile = layer.getLayerFile();
+        for (Layer layer : entry.layers) {
+            File layerFile = layer.getLayerFile(file.getParent());
             zipEntry = new ZipEntry(layerFile.getAbsolutePath());
             zOut.putNextEntry(zipEntry);
+
+            fif = new FileInputStream(layerFile);
+            bif = new BufferedInputStream(fif);
+
+            while ((i = bif.read(data, 0, BUFFER)) != -1) {
+                System.out.println("wrote layer: " + i + " bytes");
+                zOut.write(data, 0, i);
+            }
+            
+            bif.close();
             layerFile.delete();
         }
 
         zOut.close();
         fOut.close();
         bOut.close();
-        
+
         ZipFile zip = new ZipFile(file);
         Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zip.entries();
         while (entries.hasMoreElements()) {
@@ -158,10 +184,10 @@ public class LoaderWriter {
     }
 
     /**
-     * Produces an image from a provided entry and stores it to a provided 
-     * image file. File should be of .jpg-, .png- or .jpg-format.
-     * 
-     * @param entry BDEntry to save. 
+     * Produces an image from a provided entry and stores it to a provided image
+     * file. File should be of .jpg-, .png- or .jpg-format.
+     *
+     * @param entry BDEntry to save.
      * @param file
      */
     static void exportBDEntry(BDEntry entry, File file) {
@@ -170,16 +196,16 @@ public class LoaderWriter {
         for (Layer layer : entry.layers) {
             layer.drawLayer(g);
         }
-        
+
         String name = file.getName();
         String type = name.substring(name.lastIndexOf('.') + 1).toLowerCase();
         if (type.equals("jpg") || type.equals("jpeg")) { //jpg/jpeg can't handle alpha values, ImageIO does not handle this.
             BufferedImage rgbImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
             rgbImg.getGraphics().drawImage(image, 0, 0, null);
             image = rgbImg;
-            
+
         }
-            
+
         if (type.equals("jpg") || type.equals("png") || type.equals("jpeg")) {
             try {
                 ImageIO.write(image, type, file);
@@ -191,25 +217,26 @@ public class LoaderWriter {
         }
     }
 
-    public static void saveBDEntry(BDEntry entry, Stage stage) throws IOException{
+    public static void saveBDEntry(BDEntry entry, Stage stage) throws IOException {
         File file = getUserFileChoice(false, stage);
-        if (file != null){ //true if a file is chosen.
+        if (file != null) { //true if a file is chosen.
             String lcName = file.getName().toLowerCase();
-            if (lcName.endsWith(".png") || lcName.endsWith(".jpg") || lcName.endsWith(".jpeg"))
+            if (lcName.endsWith(".png") || lcName.endsWith(".jpg") || lcName.endsWith(".jpeg")) {
                 exportBDEntry(entry, file);
-            else if (lcName.endsWith(".bdf"))
+            } else if (lcName.endsWith(".bdf")) {
                 saveBDEntryToFile(entry, file);
-            else 
+            } else {
                 System.out.println("invalid file chosen");
+            }
         }
     }
-    
+
     /**
      * Creates and returns a new BDEntry based on user selected file.
-     * 
+     *
      * @param stage applicationStage where user can be asked for file selection.
      * @return a new BDEntry based on the file chosen by user (image or .bdf).
-     * @throws IOException 
+     * @throws IOException
      */
     static BDEntry openToBDEntry(Stage stage) throws IOException {
         File file = getUserFileChoice(true, stage);
