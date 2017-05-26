@@ -65,7 +65,7 @@ public class BDEntry {
     }
 
     File getMetaTempFile(String dir) throws IOException {
-        File tmpMetaFile = new File(dir + "¨\\meta.txt");
+        File tmpMetaFile = new File(dir + "/meta.txt");
         //File tmpMetaFile = File.createTempFile("meta", ".txt");
         FileOutputStream fos = new FileOutputStream(tmpMetaFile);
         //write data to file for storage

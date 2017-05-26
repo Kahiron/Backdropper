@@ -48,16 +48,9 @@ public class Backdropper extends Application {
         FileChooser fc = new FileChooser();
 
         fc.setTitle("Choose file to edit");
-
-        //File openedFile = fc.showOpenDialog(stage);
+        
         BDEntry bdEntry = LoaderWriter.openToBDEntry(stage);
-        //BDEntry l2Entry = LoaderWriter.openToBDEntry(stage);
-        //bdEntry.layers.add(l2Entry.layers.get(0));
-        //BufferedImage image = LoaderWriter.ImageFromFile(LoaderWriter.getUserFileChoice(true, stage));
         LoaderWriter.saveBDEntry(bdEntry, stage);
-        //bdEntry = LoaderWriter.openToBDEntry(stage);
-        //LoaderWriter.saveBDEntry(bdEntry, stage);
-
         System.exit(0);
     }
 }

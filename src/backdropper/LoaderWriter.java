@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.Adler32;
+import java.util.zip.CheckedOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.imageio.ImageIO;
@@ -115,8 +117,23 @@ public class LoaderWriter {
         if (dotIndex <= 0) {
             return "default";
         } else {
-            return fileName.substring(0, dotIndex - 1);
+            return fileName.substring(0, dotIndex);
         }
+    }
+    
+    @Deprecated
+    static BDEntry BDEntryFromBDFile(File file) throws IOException {
+        ZipFile zip = new ZipFile(file);
+        Enumeration<ZipEntry> entries;
+        entries = (Enumeration<ZipEntry>) zip.entries();
+        while (entries.hasMoreElements()) {
+            ZipEntry nextElement = entries.nextElement();
+            
+            System.out.println("File contains " + nextElement.getName());
+            
+        }
+        
+        return null;
     }
 
     /**
@@ -132,48 +149,51 @@ public class LoaderWriter {
      */
     static void saveBDEntryToFile(BDEntry entry, File file) throws FileNotFoundException, IOException {
         FileOutputStream fOut = new FileOutputStream(file);
-        BufferedOutputStream bOut = new BufferedOutputStream(fOut);
-        ZipOutputStream zOut = new ZipOutputStream(fOut);
-
+        System.out.println("writing to file");
+        //BufferedOutputStream bOut = new BufferedOutputStream(fOut);
+        CheckedOutputStream cOut = new CheckedOutputStream(fOut, new Adler32());
+        BufferedOutputStream bOut = new BufferedOutputStream(cOut);
+        ZipOutputStream zOut = new ZipOutputStream(bOut);
+        
         final int BUFFER = 2048;
         byte data[] = new byte[BUFFER];
-        BufferedInputStream bif;
-        FileInputStream fif;
+        BufferedInputStream bis;
+        FileInputStream fis;
 
         File metaFile = entry.getMetaTempFile(file.getParent());
         ZipEntry zipEntry = new ZipEntry(metaFile.getAbsolutePath());
         zOut.putNextEntry(zipEntry);
-        fif = new FileInputStream(metaFile);
-        bif = new BufferedInputStream(fif);
+        fis = new FileInputStream(metaFile);
+        bis = new BufferedInputStream(fis);
 
         int i;
-        while ((i = bif.read(data, 0, BUFFER)) != -1) {
+        while ((i = bis.read(data, 0, BUFFER)) != -1) {
             zOut.write(data, 0, i);
             System.out.println("wrote meta file: " + i + " bytes");
         }
         metaFile.delete();
-        bif.close();
+        bis.close();
         
         for (Layer layer : entry.layers) {
             File layerFile = layer.getLayerFile(file.getParent());
             zipEntry = new ZipEntry(layerFile.getAbsolutePath());
             zOut.putNextEntry(zipEntry);
 
-            fif = new FileInputStream(layerFile);
-            bif = new BufferedInputStream(fif);
+            fis = new FileInputStream(layerFile);
+            bis = new BufferedInputStream(fis, BUFFER);
 
-            while ((i = bif.read(data, 0, BUFFER)) != -1) {
+            while ((i = bis.read(data, 0, BUFFER)) != -1) {
                 System.out.println("wrote layer: " + i + " bytes");
                 zOut.write(data, 0, i);
             }
             
-            bif.close();
+            bis.close();
             layerFile.delete();
         }
 
         zOut.close();
         fOut.close();
-        bOut.close();
+        //bOut.close();
 
         ZipFile zip = new ZipFile(file);
         Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zip.entries();
@@ -250,8 +270,8 @@ public class LoaderWriter {
 
             return new BDEntry(ImageFromFile(file), "Layer 1", nameFromFile(name));
         } else if (lcName.endsWith(".bdf")) {
-            //todo: implement using utils.zip
-            return null;
+            
+            return BDEntryFromBDFile(file);
         } else { //Should not enter if correct extension filter has been applied. Hic sunt dracones.
             System.out.println("nonusable file");
             System.exit(1);
